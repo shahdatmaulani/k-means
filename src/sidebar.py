@@ -6,8 +6,8 @@ def render_sidebar():
     with st.sidebar:
         selected = option_menu(
             menu_title="",
-            options=["Data Visual", "Z-Score"],
-            icons=["bar-chart", "cloud-upload"],
+            options=["Z-Score", "Data Visual"],
+            icons=["cloud-upload", "bar-chart"],
             menu_icon="cast",
             default_index=0,
             orientation="vertical",
