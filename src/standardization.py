@@ -110,8 +110,12 @@ def standardization_page():
 
             # One-hot encoding kolom kategorikal
             df_encoded, categorical_cols, encoded = encode_categorical_columns(df)
+            categorical_cols = categorical_cols if categorical_cols is not None else []
             if not encoded.empty:
                 st.info(f"{len(encoded.columns)} kolom hasil one-hot encoding telah ditambahkan.")
+                # Simpan gabungan kolom numerik dan hasil one-hot encoding (sebelum standardisasi)
+                onehot_full_filename, _ = save_dataframe_with_timestamp(df_encoded, "encoded_with_numeric")
+                st.success(f"📁 Data gabungan numerik + one-hot encoding berhasil disimpan sebagai '{onehot_full_filename}'")
             else:
                 st.info("Tidak ditemukan kolom kategorikal untuk one-hot encoding.")
 
