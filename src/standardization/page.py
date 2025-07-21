@@ -4,7 +4,8 @@ import os
 import pandas as pd
 from src.standardization.io_utils import (
     read_uploaded_file, load_dataframe,
-    save_dataframe_with_timestamp, reset_session_keys
+    save_dataframe_with_timestamp, reset_session_keys,
+    get_combined_excel_download
 )
 from src.standardization.transform import (
     rename_common_columns, encode_categorical_columns,
@@ -15,7 +16,7 @@ from src.config import PREFERRED_COLUMNS
 def standardization_page():
     st.title("🧪 Data Standardization")
 
-     # Upload file CSV atau Excel
+    # Upload file CSV atau Excel
     uploaded_file = st.file_uploader("Upload Excel or CSV file", type=["csv", "xlsx"], key="file_uploader")
 
     # Cek apakah file baru diupload, jika ya, reset session state
@@ -35,12 +36,12 @@ def standardization_page():
         temp_file_path = read_uploaded_file(uploaded_file)
 
         try:
-             # Load ke dalam dataframe
+            # Load ke dalam dataframe
             df = load_dataframe(temp_file_path, uploaded_file.name)
             
             # Simpan dataset asli ke file lokal dengan timestamp
             original_filename, timestamp = save_dataframe_with_timestamp(df, "dataset_master")
-            st.success(f"📁 Dataset asli berhasil disimpan sebagai '{original_filename}'")
+            st.success(f"✅ Dataset asli berhasil disimpan sebagai '{original_filename}'")
             
             # Tampilkan preview data
             st.subheader("Original Data Preview")
@@ -48,17 +49,17 @@ def standardization_page():
 
             # Rename kolom jika ada yang cocok dengan pattern 'price', 'width', 'height'
             rename_map = rename_common_columns(df)
-            if rename_map:
-                st.info(f"Renamed columns: {rename_map}")
+            #if rename_map:
+            #    st.info(f"Renamed columns: {rename_map}")
 
             # One-hot encoding kolom kategorikal
             df_encoded, categorical_cols, encoded = encode_categorical_columns(df)
             categorical_cols = categorical_cols if categorical_cols is not None else []
             if not encoded.empty:
-                st.info(f"{len(encoded.columns)} kolom hasil one-hot encoding telah ditambahkan.")
+                #st.info(f"{len(encoded.columns)} kolom hasil one-hot encoding telah ditambahkan.")
                 # Simpan gabungan kolom numerik dan hasil one-hot encoding (sebelum standardisasi)
                 onehot_full_filename, _ = save_dataframe_with_timestamp(df_encoded, "encoded_with_numeric")
-                st.success(f"📁 Data gabungan numerik + one-hot encoding berhasil disimpan sebagai '{onehot_full_filename}'")
+                st.success(f"✅ Data gabungan numerik + one-hot encoding berhasil disimpan sebagai '{onehot_full_filename}'")
             else:
                 st.info("Tidak ditemukan kolom kategorikal untuk one-hot encoding.")
 
@@ -83,7 +84,7 @@ def standardization_page():
             # Lakukan standardisasi pada kolom terpilih
             if cols_to_standardize:
                 df_encoded = standardize_selected_columns(df_encoded, cols_to_standardize)
-                st.success(f"Kolom yang distandarisasi: {', '.join(cols_to_standardize)}")
+                #st.success(f"Kolom yang distandarisasi: {', '.join(cols_to_standardize)}")
             else:
                 st.warning("Tidak ada kolom yang dipilih untuk standardisasi.")
 
@@ -104,7 +105,7 @@ def standardization_page():
                 except Exception:
                     pass
 
-     # Jika sudah ada hasil di session_state, tampilkan
+    # Jika sudah ada hasil di session_state, tampilkan
     if "df_encoded" in st.session_state:
         df_encoded = st.session_state["df_encoded"]
         timestamp = st.session_state.get("timestamp")
@@ -127,17 +128,15 @@ def standardization_page():
         except Exception as e:
             st.warning(f"Tidak dapat menyimpan ke file lokal: {str(e)}")
 
-        # Buat file Excel untuk diunduh
-        try:
-            excel_buffer = BytesIO()
-            with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                df_encoded.to_excel(writer, index=False, sheet_name="Standardized")
+    st.subheader("📥 Download Hasil")
 
-            st.download_button(
-                label="📅 Download Standardized Data",
-                data=excel_buffer.getvalue(),
-                file_name=f"standardized_data_{timestamp}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-        except Exception as e:
-            st.error(f"Error creating download: {str(e)}")
+    excel_bytes, error = get_combined_excel_download()
+    if excel_bytes:
+        st.download_button(
+            label="⬇️ Download Excel: Encoded + Standardized",
+            data=excel_bytes,
+            file_name="combined_encoded_standardized.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    elif error:
+        st.info(f"ℹ️ {error}")

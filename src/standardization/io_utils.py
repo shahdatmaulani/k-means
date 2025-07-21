@@ -1,6 +1,7 @@
 import os
 import glob
 import tempfile
+import io
 import pandas as pd
 import streamlit as st
 from datetime import datetime
@@ -33,3 +34,24 @@ def load_latest_csv(folder_path, pattern="*.csv"):
         return None, None
     latest_file = max(csv_files, key=os.path.getmtime)
     return pd.read_csv(latest_file), latest_file
+
+def get_combined_excel_download(data_folder="data"):
+
+    encoded_files = sorted(glob.glob(os.path.join(data_folder, "encoded_with_numeric_*.csv")), key=os.path.getmtime, reverse=True)
+    standardized_files = sorted(glob.glob(os.path.join(data_folder, "standardized_data_*.csv")), key=os.path.getmtime, reverse=True)
+
+    if not encoded_files or not standardized_files:
+        return None, "File encoded atau standardized tidak ditemukan."
+
+    try:
+        df_encoded = pd.read_csv(encoded_files[0])
+        df_standardized = pd.read_csv(standardized_files[0])
+
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+            df_encoded.to_excel(writer, index=False, sheet_name="Encoded + Numeric")
+            df_standardized.to_excel(writer, index=False, sheet_name="Standardized")
+
+        return buffer.getvalue(), None
+    except Exception as e:
+        return None, str(e)
