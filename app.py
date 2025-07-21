@@ -2,8 +2,8 @@
 
 import streamlit as st
 from src.sidebar import render_sidebar
-from src.visualization import visualization_page
-from src.standardization import standardization_page
+from src.visualization.page import visualization_page
+from src.standardization.page import standardization_page
 
 # Konfigurasi halaman Streamlit
 st.set_page_config(

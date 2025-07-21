@@ -1,74 +1,17 @@
 import streamlit as st
-import pandas as pd
-import os
-import tempfile
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from io import BytesIO
-from datetime import datetime
+import os
+import pandas as pd
+from src.standardization.io_utils import (
+    read_uploaded_file, load_dataframe,
+    save_dataframe_with_timestamp, reset_session_keys
+)
+from src.standardization.transform import (
+    rename_common_columns, encode_categorical_columns,
+    standardize_selected_columns
+)
+from src.config import PREFERRED_COLUMNS
 
-# Constants yang digunakan untuk reset session state dan preferensi kolom yang akan distandarisasi
-SESSION_KEYS = ["df_encoded", "timestamp", "current_file_key"]
-PREFERRED_COLUMNS = ["price", "width", "height"]
-
-# Fungsi untuk menyimpan dataframe ke file CSV dengan nama yang mengandung timestamp
-def save_dataframe_with_timestamp(df, prefix):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{prefix}_{timestamp}.csv"
-    os.makedirs("data", exist_ok=True)
-    df.to_csv(os.path.join("data", filename), index=False)
-    return filename, timestamp
-
-# Fungsi untuk menghapus key tertentu dari session_state
-def reset_session_keys():
-    for key in SESSION_KEYS:
-        st.session_state.pop(key, None)
-
-# Fungsi untuk menyimpan file upload ke file sementara (tempfile) untuk diproses
-def read_uploaded_file(uploaded_file):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx" if uploaded_file.name.endswith("xlsx") else ".csv") as tmp:
-        tmp.write(uploaded_file.getbuffer())
-        return tmp.name
-
-# Fungsi membaca file berdasarkan ekstensi (.csv atau .xlsx)
-def load_dataframe(file_path, file_name):
-    if file_name.endswith("csv"):
-        return pd.read_csv(file_path)
-    return pd.read_excel(file_path, engine="openpyxl")
-
-# Fungsi untuk mengganti nama kolom yang umum digunakan menjadi standar ('price', 'width', 'height')
-def rename_common_columns(df):
-    rename_map = {}
-    for col in df.columns:
-        col_lower = col.lower().strip()
-        if 'price' in col_lower and '$' in col:
-            rename_map[col] = 'price'
-        elif 'width' in col_lower and ('inch' in col_lower or 'cm' in col_lower):
-            rename_map[col] = 'width'
-        elif 'height' in col_lower and ('inch' in col_lower or 'cm' in col_lower):
-            rename_map[col] = 'height'
-    df.rename(columns=rename_map, inplace=True)
-    return rename_map
-
-# Fungsi untuk melakukan one-hot encoding pada kolom kategorikal (string/kategori)
-def encode_categorical_columns(df):
-    categorical_cols = df.select_dtypes(include=["object", "category"]).columns
-    if len(categorical_cols) == 0:
-        return df.copy(), [], pd.DataFrame()
-
-    encoder = OneHotEncoder(sparse_output=False, drop=None, handle_unknown="ignore")
-    encoded_array = encoder.fit_transform(df[categorical_cols])
-    encoded = pd.DataFrame(encoded_array, columns=encoder.get_feature_names_out(categorical_cols)).reset_index(drop=True)
-    df_numeric = df.drop(columns=categorical_cols, errors="ignore")
-    df_encoded = pd.concat([df_numeric, encoded], axis=1)
-    return df_encoded, list(categorical_cols), encoded
-
-# Fungsi untuk melakukan standardisasi (z-score) terhadap kolom numerik tertentu
-def standardize_selected_columns(df, columns):
-    scaler = StandardScaler()
-    df[columns] = scaler.fit_transform(df[columns])
-    return df
-
-# Halaman utama: alur program data preprocessing
 def standardization_page():
     st.title("🧪 Data Standardization")
 
