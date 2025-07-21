@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -15,7 +14,7 @@ from src.standardization.io_utils import load_latest_csv
 
 def visualization_page():
     configure_visuals()
-    st.title("\U0001F4CA K-Means Clustering Dashboard")
+    st.title("📊 K-Means Clustering Dashboard")
 
     # Load data encoded dan master
     df, data_path = load_latest_csv("data", "standardized_*.csv")
@@ -24,12 +23,12 @@ def visualization_page():
     if df is None or df_master_full is None:
         st.error("❌ Data belum lengkap. Pastikan file encoded & master ada di folder 'data/'.")
         return
-
-    st.info(f"📄 Menggunakan file clustering: '{os.path.basename(data_path)}'")
-    st.info(f"📄 Menggunakan file master: '{os.path.basename(master_path)}'")
+    
+    #st.markdown(f"<small>📄 Menggunakan file clustering: '{os.path.basename(data_path)}'</small>", unsafe_allow_html=True)
+    #st.markdown(f"<small>📄 Menggunakan file master: '{os.path.basename(master_path)}'</small>", unsafe_allow_html=True)
 
     # Sidebar konfigurasi
-    st.sidebar.header("\U0001F527 Clustering Configuration")
+    st.sidebar.header("🛠️ Clustering Configuration")
     st.sidebar.markdown("### ⚙️ Mode Pemilihan K")
     k_mode = st.sidebar.radio("Pilih metode:", ["Auto", "Manual"])
     max_k = st.sidebar.slider("Max K (Elbow)", 2, 10, 6)
@@ -40,16 +39,16 @@ def visualization_page():
 
     # Filter Target Audience
     target_options = ["All"] + sorted(df_master_full['Target Audience'].dropna().unique())
-    selected_audience = st.sidebar.selectbox("\U0001F3AF Filter Target Audience", target_options)
+    selected_audience = st.sidebar.selectbox("🎯 Filter Target Audience", target_options)
 
     if selected_audience != "All":
         mask = df_master_full['Target Audience'] == selected_audience
         df_master_filtered = df_master_full[mask].reset_index(drop=True)
         df = df.loc[mask].reset_index(drop=True)
         df_master_full = df_master_filtered
-        st.success(f"Menampilkan hasil visualisasi hanya untuk Target Audience: **{selected_audience}**")
+        st.success(f"Menampilkan hasil visualisasi Target Audience: **{selected_audience}**")
     else:
-        st.info("Menampilkan hasil visualisasi untuk seluruh data.")
+        st.info("🌐 Menampilkan hasil visualisasi untuk seluruh data.")
 
     # Hitung Elbow dan Silhouette
     K_range = range(2, max_k + 1)
@@ -78,17 +77,17 @@ def visualization_page():
     model = KMeans(n_clusters=chosen_k, random_state=42).fit(df)
     labels = model.labels_
 
-    st.markdown("### \U0001F310 Visualisasi 2D PCA")
+    st.markdown("### 🌐 Visualisasi 2D PCA")
     fig_pca = plot_pca(df, labels)
     st.pyplot(fig_pca)
 
     # Mean per Cluster
-    st.markdown("### \U0001F4CA Rata-rata Fitur per Cluster")
+    st.markdown("### 📊 Rata-rata Fitur per Cluster")
     mean_df = get_mean_per_cluster(df, labels)
     st.dataframe(mean_df, use_container_width=True)
 
     # Profil Lengkap dari Master
-    st.markdown("### \U0001F9FE Data Dominan per Cluster")
+    st.markdown("### 🧾 Data Dominan per Cluster")
     num_cols = ['Price ($)', 'Width (Inch)', 'Height (inch)']
     cat_cols = ['Style', 'Color Palette', 'Mood/Atmosphere', 'Theme/Lighting Requirements', 'Target Audience']
     profile_full = get_cluster_profile(df_master_full, labels, num_cols, cat_cols)
