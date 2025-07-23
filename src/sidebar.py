@@ -18,6 +18,7 @@ def render_sidebar():
                     "font-size": "16px",
                     "text-align": "left",
                     "margin": "0px",
+                     "color": "white",
                     "--hover-color": "#006699",
                 },
                 "nav-link-selected": {

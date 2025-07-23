@@ -8,3 +8,4 @@ seaborn
 plotly
 xlsxwriter
 numpy
+streamlit-option-menu
