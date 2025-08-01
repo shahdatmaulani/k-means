@@ -112,7 +112,8 @@ def main():
 
         match choice:
             case "1":
-                dataset_name = input("Masukkan nama file dataset (CSV/XLSX): ").strip()
+                dataset_name = input("Masukkan nama file dataset (CSV/XLSX) di folder datasets/: ").strip()
+                dataset_name = os.path.join("datasets", dataset_name) if not os.path.isabs(dataset_name) else dataset_name
                 if not os.path.exists(dataset_name):
                     print(f"❌ File {dataset_name} tidak ditemukan. Silakan sediakan file terlebih dahulu.")
                     continue

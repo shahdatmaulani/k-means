@@ -1,2 +1,47 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# --- Virtual Environment ---
+.venv/
+venv/
+env/
+
+# --- Jupyter / VSCode ---
+.ipynb_checkpoints/
+.vscode/
+*.code-workspace
+
+# --- Logs / Cache ---
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# --- Build / Dist ---
+build/
+dist/
+*.egg-info/
+
+# --- Streamlit ---
+.streamlit/
+
+# --- Project Data Folders ---
 data/*
 !data/.gitkeep
+
+dataset/*
+!dataset/.gitkeep
+
+# --- Exports ---
+*.xlsx
+*.csv
+*.tsv
+*.parquet
+
+# --- OS files ---
+Thumbs.db
+ehthumbs.db
