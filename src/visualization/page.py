@@ -38,17 +38,20 @@ def visualization_page():
         chosen_k = None
 
     # Filter Target Audience
-    target_options = ["All"] + sorted(df_master_full['Target Audience'].dropna().unique())
-    selected_audience = st.sidebar.selectbox("🎯 Filter Target Audience", target_options)
+    if "Target Audience" in df_master_full.columns:
+        target_options = ["All"] + sorted(df_master_full['Target Audience'].dropna().unique())
+        selected_audience = st.sidebar.selectbox("🎯 Filter Target Audience", target_options)
 
-    if selected_audience != "All":
-        mask = df_master_full['Target Audience'] == selected_audience
-        df_master_filtered = df_master_full[mask].reset_index(drop=True)
-        df = df.loc[mask].reset_index(drop=True)
-        df_master_full = df_master_filtered
-        st.success(f"Menampilkan hasil visualisasi Target Audience: **{selected_audience}**")
+        if selected_audience != "All":
+            mask = df_master_full['Target Audience'] == selected_audience
+            df_master_filtered = df_master_full[mask].reset_index(drop=True)
+            df = df.loc[mask].reset_index(drop=True)
+            df_master_full = df_master_filtered
+            st.success(f"Menampilkan hasil visualisasi Target Audience: **{selected_audience}**")
+        else:
+            st.info("🌐 Menampilkan hasil visualisasi untuk seluruh data.")
     else:
-        st.info("🌐 Menampilkan hasil visualisasi untuk seluruh data.")
+        st.info("ℹ️ Kolom 'Target Audience' tidak ditemukan, visualisasi ditampilkan untuk seluruh data.")
 
     # Hitung Elbow dan Silhouette
     K_range = range(2, max_k + 1)
