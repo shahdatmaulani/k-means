@@ -35,6 +35,6 @@ def plot_pca(df, labels):
     ax.set_title("PCA Scatter Plot by Cluster")
     ax.set_xlabel("Principal Component 1")
     ax.set_ylabel("Principal Component 2")
-    ax.legend(title="Cluster", bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.legend(title="Cluster", bbox_to_anchor=(0.5, -0.15), loc='upper center', ncol=len(pca_df['Cluster'].unique()))
 
     return fig
