@@ -78,8 +78,8 @@ def standardization_page():
                         default=numeric_cols[:3] if len(numeric_cols) >= 3 else numeric_cols
                     )
                 else:
-                    st.error("Tidak ada kolom numerik yang dapat distandarisasi.")
-                    return
+                    st.info("⚠️ Tidak ada kolom numerik ditemukan. Proses standardisasi dilewati, hanya hasil one-hot encoding yang disimpan.")
+                    cols_to_standardize = []
 
             # Lakukan standardisasi pada kolom terpilih
             if cols_to_standardize:

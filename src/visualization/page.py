@@ -77,10 +77,6 @@ def visualization_page():
     model = KMeans(n_clusters=chosen_k, random_state=42).fit(df)
     labels = model.labels_
 
-    st.markdown("### 🌐 Visualisasi 2D PCA")
-    fig_pca = plot_pca(df, labels)
-    st.pyplot(fig_pca)
-
     # Mean per Cluster
     st.markdown("### 📊 Rata-rata Fitur per Cluster")
     mean_df = get_mean_per_cluster(df, labels)
@@ -92,6 +88,11 @@ def visualization_page():
     cat_cols = ['Style', 'Color Palette', 'Mood/Atmosphere', 'Theme/Lighting Requirements', 'Target Audience']
     profile_full = get_cluster_profile(df_master_full, labels, num_cols, cat_cols)
     st.dataframe(profile_full, use_container_width=True)
+
+    # PCA Visualisasi
+    st.markdown("### 🌐 Visualisasi 2D PCA")
+    fig_pca = plot_pca(df, labels)
+    st.pyplot(fig_pca)
 
 # --- Jalankan Aplikasi ---
 if __name__ == "__main__":

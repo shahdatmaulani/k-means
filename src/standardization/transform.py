@@ -21,10 +21,20 @@ def encode_categorical_columns(df):
 
     encoder = OneHotEncoder(sparse_output=False, drop=None, handle_unknown="ignore")
     encoded_array = encoder.fit_transform(df[categorical_cols])
-    encoded = pd.DataFrame(encoded_array, columns=encoder.get_feature_names_out(categorical_cols)).reset_index(drop=True)
+    
+    encoded_columns = encoder.get_feature_names_out(categorical_cols)
+    
+    encoded_columns = [
+        col.replace(" ", "_").lower()
+        for col in encoded_columns
+    ]
+    
+    encoded = pd.DataFrame(encoded_array, columns=encoded_columns).reset_index(drop=True)
+    
     df_numeric = df.drop(columns=categorical_cols, errors="ignore")
     df_encoded = pd.concat([df_numeric, encoded], axis=1)
     return df_encoded, list(categorical_cols), encoded
+
 
 def standardize_selected_columns(df, columns):
     scaler = StandardScaler()
