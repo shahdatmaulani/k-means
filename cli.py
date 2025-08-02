@@ -38,11 +38,8 @@ def main():
             master_files = sorted([f for f in os.listdir(DATA_DIR) if f.startswith("dataset_master")], reverse=True)
             df_master = pd.read_csv(os.path.join(DATA_DIR, master_files[0]))
 
-            try:
-                result = run_clustering(df, df_master, k)
-                print(result["profile"])
-            except ValueError as e:
-                print(f"❌ Error: {str(e)}")
+            result = run_clustering(df, df_master, k)
+            print(result["profile"])
 
         elif choice == "3":
             break

@@ -97,21 +97,11 @@ def visualization_page():
         "Cumulative Variance": pca_model.explained_variance_ratio_.cumsum()
     })
 
-    if selected_audience:
-        st.info(f"PCA Summary dihitung hanya untuk Target Audience: **{selected_audience}**")
-    else:
-        st.info("PCA Summary dihitung untuk seluruh data (All Data).")
-
     if st.checkbox("🔎 Tampilkan ringkasan PCA"):
         st.dataframe(pca_summary, use_container_width=True)
 
     # PCA Custom Scatter
     st.markdown("### 🎨 Custom PCA Visualization")
-
-    if selected_audience:
-        st.info(f"PCA Summary dihitung hanya untuk Target Audience: **{selected_audience}**")
-    else:
-        st.info("PCA Summary dihitung untuk seluruh data (All Data).")
         
     components = pca_model.transform(df)
     pca_df = pd.DataFrame(components, columns=[f"PC{i+1}" for i in range(n_components)])
