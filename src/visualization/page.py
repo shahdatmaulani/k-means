@@ -127,13 +127,20 @@ def visualization_page():
     pca_df["ID"] = range(1, len(df)+1)
 
     axis_options = list(pca_df.columns)
-    x_axis = st.selectbox("Pilih Sumbu X", axis_options, index=0)
-    y_axis = st.selectbox("Pilih Sumbu Y", axis_options, index=1)
-    color_axis = st.selectbox("Pilih Pewarnaan (Color)", axis_options, index=2)
+    # Cari posisi default untuk ID, PC2, Cluster
+    default_x = axis_options.index("ID") if "ID" in axis_options else 0
+    default_y = axis_options.index("PC2") if "PC2" in axis_options else 1
+    default_color = axis_options.index("Cluster") if "Cluster" in axis_options else 2
+
+    x_axis = st.selectbox("Pilih Sumbu X", axis_options, index=default_x)
+    y_axis = st.selectbox("Pilih Sumbu Y", axis_options, index=default_y)
+    color_axis = st.selectbox("Pilih Pewarnaan (Color)", axis_options, index=default_color)
 
     fig_custom = px.scatter(
         pca_df, x=x_axis, y=y_axis, color=color_axis,
         hover_data=["ID", "Cluster"],
+        color_discrete_sequence=px.colors.qualitative.Plotly,
+        template="plotly_white",
         title=f"Custom PCA Visualization: {x_axis} vs {y_axis} (colored by {color_axis})"
     )
     st.plotly_chart(fig_custom, use_container_width=True)
