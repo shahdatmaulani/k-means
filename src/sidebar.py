@@ -1,29 +1,18 @@
-# src/sidebar.py
 import streamlit as st
 from streamlit_option_menu import option_menu
+from src.config import SIDEBAR_OPTIONS, SIDEBAR_STYLES
+
 
 def render_sidebar():
+    """Render sidebar menu menggunakan konfigurasi dari config.py."""
     with st.sidebar:
         selected = option_menu(
             menu_title="",
-            options=["Z-Score", "Data Visual"],
-            icons=["cloud-upload", "bar-chart"],
+            options=list(SIDEBAR_OPTIONS.keys()),
+            icons=[SIDEBAR_OPTIONS[o] for o in SIDEBAR_OPTIONS],
             menu_icon="cast",
             default_index=0,
             orientation="vertical",
-            styles={
-                "container": {"padding": "5px", "background-color": "#003366"},
-                "icon": {"color": "white", "font-size": "25px"},
-                "nav-link": {
-                    "font-size": "16px",
-                    "text-align": "left",
-                    "margin": "0px",
-                     "color": "white",
-                    "--hover-color": "#006699",
-                },
-                "nav-link-selected": {
-                    "background-color": "#005580",
-                },
-            }
+            styles=SIDEBAR_STYLES
         )
     return selected

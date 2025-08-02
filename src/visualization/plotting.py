@@ -2,8 +2,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from sklearn.decomposition import PCA
+import plotly.express as px
+
 
 def plot_elbow_silhouette(K_range, distortions, silhouettes, chosen_k):
+    """Plot Elbow & Silhouette Score dengan matplotlib (untuk analisis)."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
     ax1.plot(K_range, distortions, marker='o', color='#006D77')
@@ -20,7 +23,9 @@ def plot_elbow_silhouette(K_range, distortions, silhouettes, chosen_k):
 
     return fig
 
-def plot_pca(df, labels):
+
+def plot_pca_matplotlib(df, labels):
+    """Plot PCA Scatter dengan matplotlib (opsional, misal untuk CLI)."""
     pca = PCA(n_components=2)
     components = pca.fit_transform(df)
     pca_df = pd.DataFrame(components, columns=['PC1', 'PC2'])
@@ -35,6 +40,23 @@ def plot_pca(df, labels):
     ax.set_title("PCA Scatter Plot by Cluster")
     ax.set_xlabel("Principal Component 1")
     ax.set_ylabel("Principal Component 2")
-    ax.legend(title="Cluster", bbox_to_anchor=(0.5, -0.15), loc='upper center', ncol=len(pca_df['Cluster'].unique()))
+    ax.legend(title="Cluster", bbox_to_anchor=(0.5, -0.15), loc='upper center',
+              ncol=len(pca_df['Cluster'].unique()))
 
+    return fig
+
+
+def plot_pca_plotly(df, labels):
+    """Plot PCA Scatter dengan plotly (utama, untuk Streamlit)."""
+    pca = PCA(n_components=2)
+    components = pca.fit_transform(df)
+    pca_df = pd.DataFrame(components, columns=['PC1', 'PC2'])
+    pca_df['Cluster'] = labels
+
+    fig = px.scatter(
+        pca_df, x="PC1", y="PC2", color="Cluster",
+        title="PCA Scatter Plot by Cluster",
+        template="plotly_white",
+        hover_data=["Cluster"]
+    )
     return fig

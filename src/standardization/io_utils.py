@@ -7,36 +7,67 @@ import streamlit as st
 from datetime import datetime
 from src.config import SESSION_KEYS
 
+
 def reset_session_keys():
+    """Hapus semua key session yang didefinisikan di SESSION_KEYS."""
     for key in SESSION_KEYS:
         st.session_state.pop(key, None)
 
+
+def update_session(df, timestamp, cols):
+    """
+    Update session state setelah proses standardisasi.
+    Args:
+        df (pd.DataFrame): Data hasil transformasi
+        timestamp (str): Timestamp proses
+        cols (list): Kolom yang distandardisasi
+    """
+    st.session_state["df_encoded"] = df.copy()
+    st.session_state["timestamp"] = timestamp
+    st.session_state["standardized_cols"] = cols
+
+
 def read_uploaded_file(uploaded_file):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx" if uploaded_file.name.endswith("xlsx") else ".csv") as tmp:
+    """Simpan file upload ke file sementara agar bisa dibaca pandas."""
+    suffix = ".xlsx" if uploaded_file.name.endswith("xlsx") else ".csv"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(uploaded_file.getbuffer())
         return tmp.name
 
+
 def load_dataframe(file_path, file_name):
+    """Load dataset ke pandas DataFrame (CSV/XLSX)."""
     if file_name.endswith("csv"):
         return pd.read_csv(file_path)
     return pd.read_excel(file_path, engine="openpyxl")
 
+
 def save_dataframe_with_timestamp(df, prefix):
+    """
+    Simpan DataFrame ke CSV dengan nama + timestamp.
+    Return: (filename, timestamp)
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{prefix}_{timestamp}.csv"
     os.makedirs("data", exist_ok=True)
     df.to_csv(os.path.join("data", filename), index=False)
     return filename, timestamp
 
+
 def load_latest_csv(folder_path, pattern="*.csv"):
+    """Ambil CSV terbaru sesuai pattern."""
     csv_files = glob.glob(os.path.join(folder_path, pattern))
     if not csv_files:
         return None, None
     latest_file = max(csv_files, key=os.path.getmtime)
     return pd.read_csv(latest_file), latest_file
 
-def get_combined_excel_download(data_folder="data"):
 
+def get_combined_excel_download(data_folder="data"):
+    """
+    Gabungkan encoded & standardized CSV terbaru ke satu file Excel.
+    Return: (bytes, error_message)
+    """
     encoded_files = sorted(glob.glob(os.path.join(data_folder, "encoded_with_numeric_*.csv")), key=os.path.getmtime, reverse=True)
     standardized_files = sorted(glob.glob(os.path.join(data_folder, "standardized_data_*.csv")), key=os.path.getmtime, reverse=True)
 
