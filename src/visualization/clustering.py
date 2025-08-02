@@ -3,8 +3,10 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
+#Menghitung K-Means Model dengan Silhouette Score dan Inertia yang terbaik
 def calculate_k_metrics(df, max_k):
     distortions, silhouettes = [], []
+    #K-Means Model
     for k in range(2, max_k + 1):
         model = KMeans(n_clusters=k, random_state=42).fit(df)
         distortions.append(model.inertia_)

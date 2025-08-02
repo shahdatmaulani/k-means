@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+import plotly.express as px
 
 from src.visualization.clustering import (
     calculate_k_metrics, get_mean_per_cluster, get_cluster_profile
@@ -80,6 +82,14 @@ def visualization_page():
     model = KMeans(n_clusters=chosen_k, random_state=42).fit(df)
     labels = model.labels_
 
+    # Tambahkan kolom cluster ke dataframe standar (supaya bisa ditampilkan)
+    df_clustered = df.copy()
+    df_clustered["Cluster"] = labels
+
+    # Tampilkan tabel hasil clustering
+    if st.checkbox(f"📋 Tampilkan seluruh data hasil clustering dengan K = {chosen_k}"):
+        st.dataframe(df_clustered, use_container_width=True)
+
     # Mean per Cluster
     st.markdown("### 📊 Rata-rata Fitur per Cluster")
     mean_df = get_mean_per_cluster(df, labels)
@@ -92,10 +102,46 @@ def visualization_page():
     profile_full = get_cluster_profile(df_master_full, labels, num_cols, cat_cols)
     st.dataframe(profile_full, use_container_width=True)
 
+    # --- PCA Summary (komponen, std dev, variance explained) ---
+    # --- PCA Summary (komponen, std dev, variance explained) ---
+    n_components = df.shape[1]   # pakai semua kolom dataset
+    pca_model = PCA(n_components=n_components)
+    pca_model.fit(df)
+
+    pca_summary = pd.DataFrame({
+        "Component": [f"PC{i+1}" for i in range(n_components)],
+        "Standard Deviation": np.sqrt(pca_model.explained_variance_),
+        "Proportion of Variance": pca_model.explained_variance_ratio_,
+        "Cumulative Variance": pca_model.explained_variance_ratio_.cumsum()
+    })
+
+    if st.checkbox(f"🔎 Tampilkan ringkasan PCA (PC1 - PC{n_components})"):
+        st.dataframe(pca_summary, use_container_width=True)
+
+
+    # --- Visualisasi PCA Custom ---
+    st.markdown("### 🎨 Custom PCA Visualization")
+    components = pca_model.transform(df)
+    pca_df = pd.DataFrame(components, columns=[f"PC{i+1}" for i in range(n_components)])
+    pca_df["Cluster"] = labels
+    pca_df["ID"] = range(1, len(df)+1)
+
+    axis_options = list(pca_df.columns)
+    x_axis = st.selectbox("Pilih Sumbu X", axis_options, index=0)
+    y_axis = st.selectbox("Pilih Sumbu Y", axis_options, index=1)
+    color_axis = st.selectbox("Pilih Pewarnaan (Color)", axis_options, index=2)
+
+    fig_custom = px.scatter(
+        pca_df, x=x_axis, y=y_axis, color=color_axis,
+        hover_data=["ID", "Cluster"],
+        title=f"Custom PCA Visualization: {x_axis} vs {y_axis} (colored by {color_axis})"
+    )
+    st.plotly_chart(fig_custom, use_container_width=True)
+
     # PCA Visualisasi
-    st.markdown("### 🌐 Visualisasi 2D PCA")
-    fig_pca = plot_pca(df, labels)
-    st.pyplot(fig_pca)
+    #st.markdown("### 🌐 Visualisasi 2D PCA")
+    #fig_pca = plot_pca(df, labels)
+    #st.pyplot(fig_pca)
 
 # --- Jalankan Aplikasi ---
 if __name__ == "__main__":
