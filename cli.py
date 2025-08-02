@@ -14,8 +14,8 @@ def main():
         choice = input("Pilih [1-3]: ").strip()
 
         if choice == "1":
-            file_name = input("Masukkan nama file (CSV/XLSX) di folder datasets/: ").strip()
-            file_path = os.path.join("datasets", file_name)
+            file_name = input("Masukkan nama file (CSV/XLSX) di folder dataset/: ").strip()
+            file_path = os.path.join("dataset", file_name)
             try:
                 result = process_dataset(file_path)
                 print(f"✅ Standardisasi selesai: {result['standardized_file']}")
