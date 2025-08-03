@@ -28,7 +28,7 @@ def visualization_page():
     # Sidebar konfigurasi
     st.sidebar.header("🛠️ Clustering Configuration")
     k_mode = st.sidebar.radio("Pilih metode pemilihan K:", ["Auto", "Manual"])
-    max_k = st.sidebar.slider("Max K (Elbow)", 2, 10, 6)
+    max_k = st.sidebar.slider("Max K (Elbow)", 2, 10, 10)
     chosen_k = None if k_mode == "Auto" else st.sidebar.slider("Chosen K", 2, max_k, 4)
 
     # Filter Target Audience
