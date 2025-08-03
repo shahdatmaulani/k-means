@@ -19,7 +19,6 @@ def configure_visuals():
 
 
 # --- Konstanta Global ---
-PREFERRED_COLUMNS = ["price", "width", "height"]
 SESSION_KEYS = ["df_encoded", "timestamp", "current_file_key"]
 DATA_DIR = "data"
 DEFAULT_RANDOM_STATE = 42

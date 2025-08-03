@@ -1,27 +1,12 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
-
-def rename_common_columns(df):
+def normalize_column_names(df):
     """
-    Rename kolom dataset agar seragam:
-    - Kolom berisi 'price' dan simbol $ → 'price'
-    - Kolom berisi 'width' + satuan → 'width'
-    - Kolom berisi 'height' + satuan → 'height'
-    Return: mapping kolom yang diubah
+    rename kolom menjadi huruf kecil dan tanpa spasi
     """
-    rename_map = {}
-    for col in df.columns:
-        col_lower = col.lower().strip()
-        if 'price' in col_lower and '$' in col:
-            rename_map[col] = 'price'
-        elif 'width' in col_lower and ('inch' in col_lower or 'cm' in col_lower):
-            rename_map[col] = 'width'
-        elif 'height' in col_lower and ('inch' in col_lower or 'cm' in col_lower):
-            rename_map[col] = 'height'
-    df.rename(columns=rename_map, inplace=True)
-    return rename_map
-
+    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+    return df
 
 def encode_categorical_columns(df):
     """
@@ -49,11 +34,20 @@ def encode_categorical_columns(df):
     return df_encoded, list(categorical_cols), encoded
 
 
-def standardize_selected_columns(df, columns):
+def standardize_all_numeric(df):
     """
-    Standardisasi kolom numerik dengan StandardScaler.
-    Return dataframe yang sudah distandardisasi.
+    Standarisasi semua kolom numerik dengan Z-Score
+    ❌ Kecuali kolom yang seluruh nilainya sudah 0–1
     """
-    scaler = StandardScaler()
-    df[columns] = scaler.fit_transform(df[columns])
-    return df
+    numeric_cols = df.select_dtypes(include=["int64", "float64"]).columns.tolist()
+    cols_to_standardize = []
+    for col in numeric_cols:
+        min_val, max_val = df[col].min(), df[col].max()
+        if not (min_val >= 0 and max_val <= 1):
+            cols_to_standardize.append(col)
+
+    if cols_to_standardize:
+        scaler = StandardScaler()
+        df[cols_to_standardize] = scaler.fit_transform(df[cols_to_standardize])
+
+    return df, cols_to_standardize

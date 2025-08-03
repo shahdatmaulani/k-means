@@ -1,10 +1,9 @@
 import os
 import pandas as pd
 from src.standardization.transform import (
-    rename_common_columns, encode_categorical_columns, standardize_selected_columns
+    normalize_column_names, encode_categorical_columns, standardize_all_numeric
 )
 from src.standardization.io_utils import save_dataframe_with_timestamp
-from src.config import PREFERRED_COLUMNS, DATA_DIR
 
 
 def process_dataset(file_path: str):
@@ -22,18 +21,14 @@ def process_dataset(file_path: str):
     master_file, timestamp = save_dataframe_with_timestamp(df, "dataset_master")
 
     # Rename kolom umum
-    rename_common_columns(df)
+    normalize_column_names(df)
 
     # One-hot encoding
     df_encoded, _, _ = encode_categorical_columns(df)
     save_dataframe_with_timestamp(df_encoded, "encoded_with_numeric")
 
-    # Standardisasi kolom numerik
-    numeric_cols = df_encoded.select_dtypes(include=["int64", "float64"]).columns.tolist()
-    cols_to_standardize = [c for c in PREFERRED_COLUMNS if c in numeric_cols]
-
-    if cols_to_standardize:
-        df_encoded = standardize_selected_columns(df_encoded, cols_to_standardize)
+    # Standarisasi numerik (semua kolom numerik yang bukan 0-1)
+    df_encoded, cols_to_standardize = standardize_all_numeric(df_encoded)
 
     # Simpan hasil akhir
     standardized_file, _ = save_dataframe_with_timestamp(df_encoded, "standardized_data")
