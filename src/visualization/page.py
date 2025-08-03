@@ -76,6 +76,9 @@ def visualization_page():
     df_clustered = df_filtered.copy()
     df_clustered["Cluster"] = labels
 
+    cols = ["Cluster"] + [c for c in df_clustered.columns if c != "Cluster"]
+    df_clustered = df_clustered[cols]
+
     if st.checkbox(f"📋 Lihat seluruh data hasil clustering (K = {chosen_k})"):
         st.dataframe(df_clustered, use_container_width=True)
 
