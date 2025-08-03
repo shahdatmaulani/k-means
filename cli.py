@@ -38,7 +38,35 @@ def main():
             master_files = sorted([f for f in os.listdir(DATA_DIR) if f.startswith("dataset_master")], reverse=True)
             df_master = pd.read_csv(os.path.join(DATA_DIR, master_files[0]))
 
-            result = run_clustering(df, df_master, k)
+            # 🎯 Audience Filter langsung di cli.py
+            selected_audience = None
+            if "Target Audience" in df_master.columns:
+                target_values = df_master["Target Audience"].dropna().unique()
+                if len(target_values) > 0:
+                    print("\n=== Pilih Target Audience ===")
+                    options = ["All"] + sorted(target_values)
+                    for i, opt in enumerate(options, 1):
+                        print(f"{i}. {opt}")
+                    try:
+                        choice = int(input("Pilih [nomor]: ").strip())
+                        if choice < 1 or choice > len(options):
+                            print("⚠️ Pilihan tidak valid. Lanjut clustering seluruh data.")
+                        elif options[choice - 1] != "All":
+                            selected_audience = options[choice - 1]
+                            print(f"✅ Menampilkan hasil untuk Target Audience: {selected_audience}")
+                        else:
+                            print("🌐 Menampilkan hasil untuk seluruh data.")
+                    except ValueError:
+                        print("⚠️ Input tidak valid. Lanjut clustering seluruh data.")
+                else:
+                    print("ℹ️ Kolom 'Target Audience' kosong. Lanjut clustering seluruh data.")
+            else:
+                print("ℹ️ Kolom 'Target Audience' tidak ditemukan. Lanjut clustering seluruh data.")
+
+            # Jalankan clustering
+            result = run_clustering(df, df_master, k, audience=selected_audience)
+
+            print("\n=== Profil Cluster ===")
             print(result["profile"])
 
         elif choice == "3":
