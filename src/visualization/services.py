@@ -4,6 +4,10 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from src.config import DEFAULT_RANDOM_STATE
 from src.visualization.clustering import get_cluster_profile
+from src.visualization.validator import (
+    validate_target_audience,
+    validate_cluster_size,
+)
 
 
 def train_kmeans(df, n_clusters, random_state=DEFAULT_RANDOM_STATE):
@@ -34,21 +38,27 @@ def auto_select_k(df, max_k=10):
 
 
 def run_clustering(df, df_master, k, audience=None):
-    """Jalankan clustering + buat profil cluster."""
-    if audience and "Target Audience" in df_master.columns:
-        mask = df_master["Target Audience"] == audience
-        df = df.loc[mask].reset_index(drop=True)
-        df_master = df_master.loc[mask].reset_index(drop=True)
+    """
+    Jalankan clustering + buat profil cluster.
+    """
+    # Filter audience
+    df_filtered, df_master_filtered, selected = validate_target_audience(df, df_master, audience)
 
-    model, labels = train_kmeans(df, k)
+    # Validasi ukuran cluster
+    validate_cluster_size(df_filtered, k)
 
-    num_cols = [c for c in df_master.select_dtypes(include=['int64', 'float64']).columns]
-    cat_cols = [c for c in df_master.select_dtypes(include=['object', 'category']).columns]
+    # Jalankan clustering
+    model, labels = train_kmeans(df_filtered, k)
 
-    profile = get_cluster_profile(df_master, labels, num_cols, cat_cols)
+    num_cols = [c for c in df_master_filtered.select_dtypes(include=['int64', 'float64']).columns]
+    cat_cols = [c for c in df_master_filtered.select_dtypes(include=['object', 'category']).columns]
+
+    profile = get_cluster_profile(df_master_filtered, labels, num_cols, cat_cols)
 
     return {
         "labels": labels,
         "profile": profile,
-        "model": model
+        "model": model,
+        "audience": selected,
+        "df_filtered": df_filtered,
     }

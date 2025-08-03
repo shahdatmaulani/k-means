@@ -34,13 +34,17 @@ def visualization_page():
     # Filter Target Audience
     selected_audience = None
     if "Target Audience" in df_master_full.columns:
-        target_options = ["All"] + sorted(df_master_full['Target Audience'].dropna().unique())
-        choice = st.sidebar.selectbox("🎯 Filter Target Audience", target_options)
-        if choice != "All":
-            selected_audience = choice
-            st.success(f"Menampilkan hasil untuk Target Audience: **{choice}**")
+        target_values = df_master_full['Target Audience'].dropna().unique()
+        if len(target_values) > 0:
+            target_options = ["All"] + sorted(target_values)
+            choice = st.sidebar.selectbox("🎯 Filter Target Audience", target_options)
+            if choice != "All":
+                selected_audience = choice
+                st.success(f"Menampilkan hasil untuk Target Audience: **{choice}**")
+            else:
+                st.info("🌐 Menampilkan hasil untuk seluruh data.")
         else:
-            st.info("🌐 Menampilkan hasil untuk seluruh data.")
+            st.info("ℹ️ Kolom 'Target Audience' kosong. Lanjut clustering seluruh data.")
     else:
         st.info("ℹ️ Kolom 'Target Audience' tidak ditemukan.")
 
@@ -63,12 +67,13 @@ def visualization_page():
     try:
         result = run_clustering(df, df_master_full, chosen_k, audience=selected_audience)
         labels = result["labels"]
+        df_filtered = result["df_filtered"]   # ✅ dataframe hasil filter
     except ValueError as e:
         st.error(str(e))
         return
 
     # Hasil clustering
-    df_clustered = df.copy()
+    df_clustered = df_filtered.copy()
     df_clustered["Cluster"] = labels
 
     if st.checkbox(f"📋 Lihat seluruh data hasil clustering (K = {chosen_k})"):
@@ -76,7 +81,7 @@ def visualization_page():
 
     # Mean per cluster
     st.markdown("### 📊 Rata-rata Fitur per Cluster")
-    mean_df = get_mean_per_cluster(df, labels)
+    mean_df = get_mean_per_cluster(df_filtered, labels)   # ✅ pakai df_filtered
     st.dataframe(mean_df, use_container_width=True)
 
     # Profil cluster
@@ -87,8 +92,8 @@ def visualization_page():
     st.dataframe(result["profile"], use_container_width=True)
 
     # PCA Summary
-    n_components = df.shape[1]
-    pca_model = PCA(n_components=n_components).fit(df)
+    n_components = df_filtered.shape[1]   # ✅ pakai df_filtered
+    pca_model = PCA(n_components=n_components).fit(df_filtered)
 
     pca_summary = pd.DataFrame({
         "Component": [f"PC{i+1}" for i in range(n_components)],
@@ -103,10 +108,10 @@ def visualization_page():
     # PCA Custom Scatter
     st.markdown("### 🎨 Custom PCA Visualization")
         
-    components = pca_model.transform(df)
+    components = pca_model.transform(df_filtered)   # ✅ pakai df_filtered
     pca_df = pd.DataFrame(components, columns=[f"PC{i+1}" for i in range(n_components)])
     pca_df["Cluster"] = labels
-    pca_df["ID"] = range(1, len(df)+1)
+    pca_df["ID"] = range(1, len(df_filtered)+1)   # ✅ panjang sesuai df_filtered
 
     axis_options = list(pca_df.columns)
     x_axis = st.selectbox("Sumbu X", axis_options, index=axis_options.index("ID"))
